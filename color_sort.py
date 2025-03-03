@@ -7,10 +7,10 @@ port = "/dev/ttyUSB0"
 board = pyfirmata.Arduino(port)
 
 LED_pins = {
-    1: board.get_pin('d:7:o'),
-    2: board.get_pin('d:8:o'),
-    3: board.get_pin('d:9:o'),
-    4: board.get_pin('d:10:o')
+    1: board.digital[7],
+    2: board.digital[8],
+    3: board.digital[9],
+    4: board.digital[10]
 }
 
 led_status = {1: False, 2: False, 3: False, 4: False}
@@ -23,8 +23,8 @@ def select_pin(i):
     return i + 1
 
 def classify_object(r, g, b):
-    ml_g, mu_g = [60, 130, 70], [90, 170, 120]
-    ml_b, mu_b = [200, 50, 10], [255, 100, 40]
+    ml_g, mu_g = [5, 60, 40], [60, 120, 100]
+    ml_b, mu_b = [130, 10, 10], [190, 60, 60]
     
     if ml_g[0] < b < mu_g[0] and ml_g[1] < g < mu_g[1] and ml_g[2] < r < mu_g[2]:
         return "Green Object"
@@ -41,16 +41,17 @@ def control_led(cls, i):
         if not led_status[4]:
             LED_pins[4].write(1)
             led_status[4] = True
-            led_timers[4] = current_time + 1.0
+            led_timers[4] = current_time + 1.5
 
         if cls == "Green Object":
             if not led_status[i]:
                 LED_pins[i].write(1)
                 led_status[i] = True
-                led_timers[i] = current_time + 1.0
+                led_timers[i] = current_time + 1.5
 
 while True:
     ret, im = cap.read()
+    im = cv2.flip(im, 1)
     
     if not ret:
         continue
